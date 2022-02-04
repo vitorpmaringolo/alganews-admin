@@ -20,9 +20,7 @@ export default function DoubleConfirm(props: DoubleConfirmProps) {
         confirm({
           title: props.modalTitle,
           cancelText: 'Cancelar',
-          onOk() {
-            console.log('todo: implement payment batch approval');
-          },
+          onOk: props.onConfirm,
           content: props.modalContent,
         });
       }}

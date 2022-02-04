@@ -6,6 +6,7 @@ import CashFlowExpensesView from './views/CashFlowExpenses.view';
 import CashFlowRevenuesView from './views/CashFlowRevenues.view';
 import HomeView from './views/Home.view';
 import PaymentCreateView from './views/PaymentCreate.view';
+import PaymentDetailsView from './views/PaymentDetails.view';
 import PaymentListView from './views/PaymentList.view';
 import UserCreateView from './views/UserCreate.view';
 import UserDetailsView from './views/UserDetails.view';
@@ -53,6 +54,7 @@ export default function Routes() {
         exact
         component={PaymentCreateView}
       />
+      <Route path={'/pagamentos/:id'} exact component={PaymentDetailsView} />
       <Route
         path={'/fluxo-de-caixa/despesas'}
         exact

@@ -20,7 +20,7 @@ export default function DefaultLayoutSidebar() {
   return (
     <Sider
       width={200}
-      className='site-layout-background'
+      className='site-layout-background no-print'
       breakpoint='lg'
       collapsedWidth='0'
     >

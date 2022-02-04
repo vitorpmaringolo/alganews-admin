@@ -1,7 +1,9 @@
+import { DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import {
   Button,
   DatePicker,
   Descriptions,
+  notification,
   Popconfirm,
   Row,
   Space,
@@ -9,34 +11,33 @@ import {
   Tag,
   Tooltip,
 } from 'antd';
+import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
+import confirm from 'antd/lib/modal/confirm';
+import { SorterResult } from 'antd/lib/table/interface';
 import moment from 'moment';
-import { useEffect, useState } from 'react';
-import { EyeOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Payment } from 'vitorpmaringolo-sdk';
 import usePayments from '../../core/hooks/usePayments';
-import confirm from 'antd/lib/modal/confirm';
-import { Key } from 'antd/lib/table/interface';
-import useBreakpoint from 'antd/lib/grid/hooks/useBreakpoint';
 import DoubleConfirm from '../components/DoubleConfirm';
-import { Link } from 'react-router-dom';
 
 export default function PaymentListView() {
-  const { payments, fetchPayments } = usePayments();
-  const [yearMonth, setYearMonth] = useState<string | undefined>();
-  const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const { xs } = useBreakpoint();
+  const {
+    payments,
+    fetching,
+    query,
+    selected,
+    fetchPayments,
+    setQuery,
+    approvePaymentsInBatch,
+    setSelected,
+    deleteExistingPayment,
+  } = usePayments();
 
   useEffect(() => {
-    console.log(selectedRowKeys);
-  }, [selectedRowKeys]);
-
-  useEffect(() => {
-    fetchPayments({
-      scheduledToYearMonth: yearMonth,
-      sort: ['scheduledTo', 'desc'],
-      page: 0,
-    });
-  }, [fetchPayments, yearMonth]);
+    fetchPayments();
+  }, [fetchPayments]);
 
   return (
     <>
@@ -50,23 +51,26 @@ export default function PaymentListView() {
         >
           <DoubleConfirm
             popConfirmTitle={
-              selectedRowKeys.length === 1
+              selected.length === 1
                 ? 'Você deseja aprovar o agendamento selecionado?'
                 : 'Você deseja aprovar os agendamentos selecionados?'
             }
-            disabled={selectedRowKeys.length === 0}
+            disabled={selected.length === 0}
             modalTitle={'Aprovar agendamento'}
             modalContent={
               'Esta é uma ação irreversível. Ao aprovar um agendamento, ele não poderá ser removido!'
             }
-            onConfirm={() => {
-              console.log('todo: implement payment batch approval');
+            onConfirm={async () => {
+              await approvePaymentsInBatch(selected as number[]);
+              notification.success({
+                message: 'Os pagamentos selecionados foram aprovados',
+              });
             }}
           >
             <Button
               block={xs}
               type={'primary'}
-              disabled={selectedRowKeys.length === 0}
+              disabled={selected.length === 0}
             >
               Aprovar pagamentos
             </Button>
@@ -77,7 +81,9 @@ export default function PaymentListView() {
             format={'MMMM - YYYY'}
             placeholder={'Filtrar por mês'}
             onChange={(date) => {
-              setYearMonth(date ? date.format('YYYY-MM') : undefined);
+              setQuery({
+                scheduledToYearMonth: date ? date.format('YYYY-MM') : undefined,
+              });
             }}
           />
         </Space>
@@ -85,9 +91,24 @@ export default function PaymentListView() {
       <Table<Payment.Summary>
         dataSource={payments?.content}
         rowKey='id'
+        loading={fetching}
+        onChange={(p, f, sorter) => {
+          const { order } = sorter as SorterResult<Payment.Summary>;
+          const direction = order?.replace('end', '');
+          if (direction && direction !== query.sort![1])
+            setQuery({
+              sort: [query.sort![0], direction as 'asc' | 'desc'],
+            });
+        }}
+        pagination={{
+          current: query.page ? query.page + 1 : 1,
+          onChange: (page) => setQuery({ page: page - 1 }),
+          total: payments?.totalElements,
+          pageSize: query.size,
+        }}
         rowSelection={{
-          selectedRowKeys,
-          onChange: setSelectedRowKeys,
+          selectedRowKeys: selected,
+          onChange: setSelected,
           getCheckboxProps(payment) {
             return !payment.canBeApproved ? { disabled: true } : {};
           },
@@ -127,7 +148,9 @@ export default function PaymentListView() {
                   </Descriptions.Item>
                   <Descriptions.Item label={'Ações'}>
                     <Tooltip title={'Detalhar'} placement={xs ? 'top' : 'left'}>
-                      <Button size={'small'} icon={<EyeOutlined />} />
+                      <Link to={`/pagamentos/${payment.id}`}>
+                        <Button size={'small'} icon={<EyeOutlined />} />
+                      </Link>
                     </Tooltip>
                     <Popconfirm
                       title='Remover agendamento?'
@@ -137,7 +160,7 @@ export default function PaymentListView() {
                           title: 'Remover agendamento',
                           cancelText: 'Cancelar',
                           onOk() {
-                            console.log('todo: implement payment deletion');
+                            deleteExistingPayment(payment.id);
                           },
                           content:
                             'Esta é uma ação irreversível. Ao remover um agendamento, ele não poderá ser recuperado!',
@@ -179,6 +202,9 @@ export default function PaymentListView() {
             title: 'Agendamento',
             align: 'center',
             width: 140,
+            sorter(a, b) {
+              return 0;
+            },
             responsive: ['sm'],
             render(date: string) {
               return moment(date).format('DD/MM/YYYY');
@@ -225,7 +251,9 @@ export default function PaymentListView() {
               return (
                 <>
                   <Tooltip title={'Detalhar'} placement='left'>
-                    <Button size='small' icon={<EyeOutlined />} />
+                    <Link to={`/pagamentos/${payment.id}`}>
+                      <Button size='small' icon={<EyeOutlined />} />
+                    </Link>
                   </Tooltip>
                   <Popconfirm
                     title='Remover agendamento?'
@@ -235,7 +263,7 @@ export default function PaymentListView() {
                         title: 'Remover agendamento',
                         cancelText: 'Cancelar',
                         onOk() {
-                          console.log('todo: implement payment deletion');
+                          deleteExistingPayment(id);
                         },
                         content:
                           'Esta é uma ação irreversível. Ao remover um agendamento, ele não poderá ser recuperado.',

@@ -24,7 +24,15 @@
 @layout-trigger-height: 120px;
 
 .ant-layout-sider-zero-width-trigger {
-  background-color: @text-color;
+  color: @text-color;
+  background-color: transparent;
+  top: -64px;
+  left: 0;
+  height: 64px;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #root > section.ant-layout {
@@ -62,5 +70,25 @@
 @media screen and (max-width: 1190px) {
   .ant-table-content {
     overflow: auto;
+  }
+}
+
+@media print {
+  * {
+    color: #000 !important;
+    border-color: #ccc !important;
+    background-color: #fff !important;
+  }
+
+  .no-print {
+    display: none;
+  }
+
+  .ant-layout {
+    margin: 0 !important;
+  }
+
+  @page {
+    size: landscape;
   }
 }
