@@ -1,3 +1,5 @@
+import EntryCRUD from '../features/EntryCRUD';
+
 export default function CashFlowExpensesView() {
-  return <div>todo: cashflow expenses view</div>;
+  return <EntryCRUD type={'EXPENSE'} />;
 }
