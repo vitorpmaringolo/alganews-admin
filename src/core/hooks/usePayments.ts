@@ -2,11 +2,11 @@ import { Key } from 'rc-table/lib/interface';
 import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Payment } from 'vitorpmaringolo-sdk';
-import { RootState } from '../store';
+import { AppDispatch, RootState } from '../store';
 import * as PaymentActions from '../store/Payment.slice';
 
 export default function usePayments() {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const fetching = useSelector((s: RootState) => s.payment.fetching);
   const payments = useSelector((s: RootState) => s.payment.paginated);
@@ -24,7 +24,7 @@ export default function usePayments() {
   );
 
   const fetchPayments = useCallback(
-    () => dispatch(PaymentActions.getAllPayments()),
+    () => dispatch(PaymentActions.getAllPayments()).unwrap(),
     [dispatch]
   );
 

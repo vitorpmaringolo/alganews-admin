@@ -12,7 +12,7 @@ export default function useEntriesCategories() {
   const revenues = useSelector((s: RootState) => s.cashFlow.category.revenues);
 
   const fetchCategories = useCallback(
-    () => dispatch(CategoryActions.getCategories()),
+    () => dispatch(CategoryActions.getCategories()).unwrap(),
     [dispatch]
   );
 

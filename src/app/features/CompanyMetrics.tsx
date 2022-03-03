@@ -3,7 +3,9 @@ import { format } from 'date-fns';
 import ptBR from 'date-fns/esm/locale/pt-BR';
 import { useEffect, useState } from 'react';
 import { MetricService } from 'vitorpmaringolo-sdk';
+import { ForbiddenError } from 'vitorpmaringolo-sdk/dist/errors';
 import transformDataIntoAntdChart from '../../core/utils/transformDataIntoAntdChart';
+import Forbidden from '../components/Forbidden';
 
 export default function CompanyMetrics() {
   const [data, setData] = useState<
@@ -14,11 +16,22 @@ export default function CompanyMetrics() {
     }[]
   >([]);
 
+  const [forbidden, setForbidden] = useState(false);
+
   useEffect(() => {
     MetricService.getMonthlyRevenuesExpenses()
       .then(transformDataIntoAntdChart)
-      .then(setData);
+      .then(setData)
+      .catch((err) => {
+        if (err instanceof ForbiddenError) {
+          setForbidden(true);
+          return;
+        }
+        throw err;
+      });
   }, []);
+
+  if (forbidden) return <Forbidden minHeight={256} />;
 
   const config: AreaConfig = {
     data,

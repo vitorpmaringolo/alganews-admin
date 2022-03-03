@@ -12,7 +12,7 @@ import {
   Tooltip,
 } from 'antd';
 import { format } from 'date-fns';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { User } from 'vitorpmaringolo-sdk';
 import useUsers from '../../core/hooks/useUsers';
 import {
@@ -23,13 +23,26 @@ import {
 } from '@ant-design/icons';
 import { ColumnProps } from 'antd/lib/table';
 import { Link } from 'react-router-dom';
+import Forbidden from '../components/Forbidden';
 
 export default function UserList() {
   const { users, fetchUsers, toggleUserStatus, fetching } = useUsers();
 
-  useEffect(() => {
-    fetchUsers();
+  const [forbidden, setForbidden] = useState(false);
+
+  const _fetchUsers = useCallback(() => {
+    fetchUsers().catch((err) => {
+      if (err?.data?.status === 403) {
+        setForbidden(true);
+        return;
+      }
+      throw err;
+    });
   }, [fetchUsers]);
+
+  useEffect(() => {
+    _fetchUsers();
+  }, [_fetchUsers]);
 
   const getColumnSearchProps = (
     dataIndex: keyof User.Summary,
@@ -79,6 +92,8 @@ export default function UserList() {
             .includes((value as string).toLowerCase())
         : '',
   });
+
+  if (forbidden) return <Forbidden />;
 
   return (
     <>
