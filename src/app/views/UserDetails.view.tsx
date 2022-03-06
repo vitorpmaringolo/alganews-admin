@@ -22,6 +22,7 @@ import moment from 'moment';
 import { useEffect, useState } from 'react';
 import { Link, Redirect, useParams } from 'react-router-dom';
 import { Post } from 'vitorpmaringolo-sdk';
+import useBreadcrumb from '../../core/hooks/useBreadcrumb';
 import usePageTitle from '../../core/hooks/usePageTitle';
 import usePosts from '../../core/hooks/usePosts';
 import useUser from '../../core/hooks/useUser';
@@ -35,6 +36,8 @@ export default function UserDetailsView() {
   const { lg } = useBreakpoint();
 
   const { user, fetchUser, notFound, toggleUserStatus } = useUser();
+
+  useBreadcrumb(`Usuários/${user?.name || 'Detalhes'}`);
 
   const {
     fetchUserPosts,
@@ -116,7 +119,13 @@ export default function UserDetailsView() {
                 });
               }}
             >
-              <Button type={'primary'}>
+              <Button
+                disabled={
+                  (user.active && !user.canBeDeactivated) ||
+                  (!user.active && !user.canBeActivated)
+                }
+                type={'primary'}
+              >
                 {user.active ? 'Desabilitar' : 'Habilitar'}
               </Button>
             </Popconfirm>

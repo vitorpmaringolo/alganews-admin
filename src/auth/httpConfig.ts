@@ -33,7 +33,7 @@ Service.setResponseInterceptors(
 
       // caso algum não exista, não é possível renovar o token
       if (!refreshToken || !codeVerifier) {
-        window.alert('TODO: IMPLEMENTAR LOGOUT');
+        AuthService.imperativelySendToLogout();
         return;
       }
 

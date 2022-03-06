@@ -1,6 +1,7 @@
-import { Avatar, Card, Col, Row } from 'antd';
+import { Avatar, Card, Col, Row, Space, Tooltip, Typography } from 'antd';
 import { useEffect } from 'react';
 import useLatestPosts from '../../core/hooks/useLatestPosts';
+import { EyeOutlined } from '@ant-design/icons';
 
 export default function LatestPosts() {
   const { fetchPosts, posts } = useLatestPosts();
@@ -20,6 +21,20 @@ export default function LatestPosts() {
                   style={{ height: 168, objectFit: 'cover' }}
                 />
               }
+              actions={[
+                <Tooltip title={'Ver post no blog'}>
+                  <a
+                    target='_blank'
+                    rel={'noopener noreferrer'}
+                    href={`http://localhost:3002/posts/${post.id}/${post.slug}`}
+                  >
+                    <Space>
+                      <EyeOutlined />
+                      <Typography.Text>Ver post no blog</Typography.Text>
+                    </Space>
+                  </a>
+                </Tooltip>,
+              ]}
             >
               <Card.Meta
                 avatar={<Avatar src={post.editor.avatarUrls.small} />}

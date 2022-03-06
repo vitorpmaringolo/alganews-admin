@@ -233,14 +233,16 @@ export default function EntriesList(props: EntriesListProps) {
                     type={'text'}
                     size={'small'}
                     icon={<DeleteOutlined />}
+                    disabled={!record.canBeDeleted}
                     danger
                   />
                 </DoubleConfirm>
                 <Button
                   type={'text'}
                   size={'small'}
-                  onClick={() => props.onEdit(id)}
                   icon={<EditOutlined />}
+                  disabled={!record.canBeEdited}
+                  onClick={() => props.onEdit(id)}
                 />
                 <Button
                   type={'text'}
