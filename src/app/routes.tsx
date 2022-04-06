@@ -1,16 +1,6 @@
 import { Route, Switch, useHistory, useLocation } from 'react-router-dom';
 
-import HomeView from './views/Home.view';
-import UserCreateView from './views/UserCreate.view';
-import UserEditView from './views/UserEdit.view';
-import UserListView from './views/UserList.view';
-import UserDetailsView from './views/UserDetails.view';
-import PaymentListView from './views/PaymentList.view';
-import PaymentCreateView from './views/PaymentCreate.view';
-import PaymentDetailsView from './views/PaymentDetails.view';
-import CashFlowRevenuesView from './views/CashFlowRevenues.view';
-import CashFlowExpensesView from './views/CashFlowExpenses.view';
-import { useEffect, useMemo } from 'react';
+import React, { Suspense, useEffect, useMemo } from 'react';
 import CustomError from 'vitorpmaringolo-sdk/dist/CustomError';
 import { message, notification } from 'antd';
 import AuthService from '../auth/Authorization.service';
@@ -18,6 +8,27 @@ import jwtDecode from 'jwt-decode';
 import { Authentication } from '../auth/Auth';
 import useAuth from '../core/hooks/useAuth';
 import GlobalLoading from './components/GlobalLoading';
+
+const HomeView = React.lazy(() => import('./views/Home.view'));
+const UserCreateView = React.lazy(() => import('./views/UserCreate.view'));
+const UserEditView = React.lazy(() => import('./views/UserEdit.view'));
+const UserListView = React.lazy(() => import('./views/UserList.view'));
+const UserDetailsView = React.lazy(() => import('./views/UserDetails.view'));
+const PaymentListView = React.lazy(() => import('./views/PaymentList.view'));
+const PaymentCreateView = React.lazy(
+  () => import('./views/PaymentCreate.view')
+);
+const PaymentDetailsView = React.lazy(
+  () => import('./views/PaymentDetails.view')
+);
+const CashFlowRevenuesView = React.lazy(
+  () => import('./views/CashFlowRevenues.view')
+);
+const CashFlowExpensesView = React.lazy(
+  () => import('./views/CashFlowExpenses.view')
+);
+
+const APP_BASE_URL = process.env.REACT_APP_BASE_URL;
 
 export default function Routes() {
   const history = useHistory();
@@ -88,7 +99,7 @@ export default function Routes() {
           await AuthService.getFirstAccessToken({
             code,
             codeVerifier,
-            redirectUri: 'http://localhost:3000/authorize',
+            redirectUri: `${APP_BASE_URL}/authorize`,
           });
 
         AuthService.setAccessToken(access_token);
@@ -119,29 +130,31 @@ export default function Routes() {
   if (isAuthorizationRoute || !user) return <GlobalLoading />;
 
   return (
-    <Switch>
-      <Route path={'/'} exact component={HomeView} />
-      <Route path={'/usuarios/cadastro'} exact component={UserCreateView} />
-      <Route path={'/usuarios/edicao/:id'} exact component={UserEditView} />
-      <Route path={'/usuarios/:id'} exact component={UserDetailsView} />
-      <Route path={'/usuarios'} exact component={UserListView} />
-      <Route path={'/pagamentos'} exact component={PaymentListView} />
-      <Route
-        path={'/pagamentos/cadastro'}
-        exact
-        component={PaymentCreateView}
-      />
-      <Route path={'/pagamentos/:id'} exact component={PaymentDetailsView} />
-      <Route
-        path={'/fluxo-de-caixa/despesas'}
-        exact
-        component={CashFlowExpensesView}
-      />
-      <Route
-        path={'/fluxo-de-caixa/receitas'}
-        exact
-        component={CashFlowRevenuesView}
-      />
-    </Switch>
+    <Suspense fallback={<GlobalLoading />}>
+      <Switch>
+        <Route path={'/'} exact component={HomeView} />
+        <Route path={'/usuarios/cadastro'} exact component={UserCreateView} />
+        <Route path={'/usuarios/edicao/:id'} exact component={UserEditView} />
+        <Route path={'/usuarios/:id'} exact component={UserDetailsView} />
+        <Route path={'/usuarios'} exact component={UserListView} />
+        <Route path={'/pagamentos'} exact component={PaymentListView} />
+        <Route
+          path={'/pagamentos/cadastro'}
+          exact
+          component={PaymentCreateView}
+        />
+        <Route path={'/pagamentos/:id'} exact component={PaymentDetailsView} />
+        <Route
+          path={'/fluxo-de-caixa/despesas'}
+          exact
+          component={CashFlowExpensesView}
+        />
+        <Route
+          path={'/fluxo-de-caixa/receitas'}
+          exact
+          component={CashFlowRevenuesView}
+        />
+      </Switch>
+    </Suspense>
   );
 }

@@ -2,6 +2,10 @@ import Service from 'vitorpmaringolo-sdk/dist/Service';
 import AuthService from './Authorization.service';
 import axios from 'axios';
 
+const { REACT_APP_API_BASE_URL } = process.env;
+
+if (REACT_APP_API_BASE_URL) Service.setBaseUrl(REACT_APP_API_BASE_URL);
+
 Service.setRequestInterceptors(async (request) => {
   const accessToken = AuthService.getAccessToken();
 
